@@ -1,12 +1,13 @@
-class_name PlayerStateMachine extends Node
+class_name EnemyStateMachine extends Node
 
-var states:Array[State]
-var prev_state:State
-var current_state:State
+
+var states:Array[EnemyState]
+var prev_state:EnemyState
+var current_state:EnemyState
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
-	process_mode = Node.PROCESS_MODE_DISABLED
+	process_mode= Node.PROCESS_MODE_DISABLED
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta: float) -> void:
@@ -17,30 +18,25 @@ func _physics_process(delta: float) -> void:
 	change_state(current_state.physics_process(delta))
 	
 	
-func _unhandled_input(event: InputEvent) -> void:
-	change_state(current_state.handle_input(event))
-	
-	
-func initialize(_player:Player)->void:
+func initialize(_enemy:Enemy)->void:
 	states=[]
 	for c in get_children():
-		if c is State:
+		if c is EnemyState:
 			states.append(c)
-	if states.size()==0:
-		return
-	states[0].player=_player
-	states[0].state_machine=self
-	
-	for state in states:
-		state.init()
-	
-	change_state(states[0])
-	process_mode = Node.PROCESS_MODE_INHERIT
+			
+	for s in states:
+		s.enemy=_enemy
+		s.state_machine=self
+		s.init()
+		
+	if states.size()>0:
+		change_state(states[0])
+		process_mode = Node.PROCESS_MODE_INHERIT
 
 
 # 改变状态，先判断新状态是否为空或者新状态与当前状态相同，如果判断为真，则不改变状态
 # 否则，先退出当前状态，再进入新状态
-func change_state(new_state:State)->void:
+func change_state(new_state:EnemyState)->void:
 	if new_state==null || new_state==current_state:
 		return
 	if current_state:
